@@ -1,0 +1,91 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; }
+
+body {
+  background: #07070f;
+  color: #eaeaea;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #0d0d1f; }
+::-webkit-scrollbar-thumb { background: #1e1e3a; border-radius: 2px; }
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.3; transform: scale(0.6); }
+}
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── 반응형 레이아웃 ──────────────────────────────────── */
+
+.header-stats {
+  display: flex;
+  gap: 20px;
+}
+
+.tab-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .header-stats {
+    gap: 12px;
+  }
+
+  .header-row {
+    padding: 10px 14px !important;
+  }
+
+  .tab-bar {
+    padding: 10px 14px !important;
+  }
+
+  .tab-content {
+    padding: 12px 14px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-stats {
+    gap: 8px;
+  }
+}
+
+/* ── 모바일 글자 크기 확대 ────────────────────────────── */
+
+@media (max-width: 768px) {
+  .tab-btn { font-size: 14px !important; }
+  .status-strip-label { font-size: 12px !important; }
+  .card-meta { font-size: 12px !important; }
+  .card-title { font-size: 16px !important; }
+  .card-excerpt { font-size: 14px !important; }
+  .card-btn { font-size: 14px !important; padding: 12px 0 !important; }
+  .card-image { height: 160px !important; }
+  .card-body { padding: 14px !important; gap: 8px !important; }
+  .news-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+  .pipeline-title { font-size: 15px !important; }
+  .pipeline-meta-btn { font-size: 12px !important; padding: 6px 12px !important; }
+  .pipeline-timestamp { font-size: 11px !important; }
+  .collect-btn { font-size: 13px !important; padding: 8px 18px !important; }
+  .page-btn { font-size: 13px !important; padding: 8px 14px !important; }
+  .status-badge { font-size: 11px !important; padding: 4px 10px !important; }
+  .empty-msg { font-size: 15px !important; }
+  .summary-text { font-size: 14px !important; }
+  .log-msg { font-size: 13px !important; }
+}
