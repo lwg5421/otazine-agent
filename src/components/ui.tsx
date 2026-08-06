@@ -141,6 +141,10 @@ export function PipelineCard({ item }: { item: PipelineItem }) {
           <div style={{ width: 14, height: 14, border: "2px solid #e94560", borderTopColor: "transparent",
             borderRadius: "50%", animation: "spin 0.8s linear infinite", flexShrink: 0 }} />
         )}
+        {item.news.image && (
+          <img src={item.news.image} alt="" style={{ width: 32, height: 32, borderRadius: 4,
+            objectFit: "cover", flexShrink: 0, opacity: 0.85 }} />
+        )}
         <StatusBadge status={item.status} score={item.score} />
         <div className="pipeline-title" style={{ flex: 1, fontSize: 11, color: "#aaa", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
           {item.news.title}
@@ -159,6 +163,11 @@ export function PipelineCard({ item }: { item: PipelineItem }) {
       {/* 상세 */}
       {open && (
         <div style={{ padding: "0 14px 14px", borderTop: "1px solid #1a1a30" }}>
+
+          {item.news.image && (
+            <img src={item.news.image} alt="" style={{ width: "100%", maxHeight: 200,
+              objectFit: "cover", borderRadius: 4, marginTop: 12, opacity: 0.9 }} />
+          )}
 
           {/* 작성된 기사 */}
           {(item.draft || item.editedDraft) && (
@@ -298,6 +307,10 @@ function ReaderModalContent({ item, onClose }: { item: PipelineItem; onClose: ()
 
       <div style={{ flex: 1, overflowY: "auto", padding: "24px 20px" }}>
         <div style={{ maxWidth: 680, margin: "0 auto" }}>
+          {item.news.image && (
+            <img src={item.news.image} alt="" style={{ width: "100%", maxHeight: 340,
+              objectFit: "cover", borderRadius: 8, marginBottom: 24 }} />
+          )}
           <div style={{ fontSize: 17, lineHeight: 2, color: "#eee", whiteSpace: "pre-wrap",
             wordBreak: "break-word" }}>
             {text}

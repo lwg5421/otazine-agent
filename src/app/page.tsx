@@ -4,7 +4,10 @@ import { useStore } from "@/lib/store";
 import { NewsCard } from "@/components/ui";
 
 export default function NewsPage() {
-  const { news, page, setPage, agentStatus, runFetcher, runPipeline } = useStore();
+  const { news, page, setPage, agentStatus, pipeline, runFetcher, runPipeline } = useStore();
+
+  const processedIds = new Set(pipeline.map(p => p.news.id));
+  const visibleNews = news.filter(item => !processedIds.has(item.id));
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
@@ -29,14 +32,16 @@ export default function NewsPage() {
       </div>
 
       <div className="tab-content" style={{ flex: 1, overflowY: "auto", padding: "16px 20px" }}>
-        {news.length === 0 ? (
+        {visibleNews.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 0", color: "#333" }}>
             <div style={{ fontSize: 32, marginBottom: 12 }}>⬡</div>
-            <div className="empty-msg" style={{ fontSize: 12 }}>뉴스 수집 버튼을 눌러 시작하세요</div>
+            <div className="empty-msg" style={{ fontSize: 12 }}>
+              {news.length === 0 ? "뉴스 수집 버튼을 눌러 시작하세요" : "이 페이지 뉴스는 이미 전부 작성했어요"}
+            </div>
           </div>
         ) : (
           <div className="news-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
-            {news.map(item => (
+            {visibleNews.map(item => (
               <NewsCard key={item.id} item={item}
                 onStart={n => runPipeline(n)}
                 disabled={agentStatus !== "idle"} />
