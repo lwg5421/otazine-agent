@@ -4,14 +4,16 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
+    "build": "prisma generate && prisma db push --accept-data-loss && next build",
+    "start": "next start",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",
-    "@google/generative-ai": "^0.24.1",
+    "@prisma/client": "^6.19.3",
     "fast-xml-parser": "^5.10.1",
     "next": "^14.2.0",
+    "prisma": "^6.19.3",
     "react": "^18.3.0",
     "react-dom": "^18.3.0"
   },

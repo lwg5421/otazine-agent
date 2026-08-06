@@ -1,0 +1,24 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model PipelineItem {
+  id          String    @id
+  news        Json
+  status      String
+  draft       String?
+  editedDraft String?
+  approved    Boolean?
+  score       Int?
+  summary     String?
+  confirmRaw  String?
+  startedAt   String
+  finishedAt  String?
+  createdAt   DateTime  @default(now())
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useCallback, useState, type ReactNode } from "react";
+import { createContext, useContext, useCallback, useEffect, useState, type ReactNode } from "react";
 import type { AnimeNews } from "@/lib/news";
 
 export type AgentStatusType = "idle" | "fetching" | "writing" | "confirming";
@@ -38,12 +38,38 @@ export const AGENTS = {
 function now() { return new Date().toLocaleTimeString("ko-KR", { hour12: false }); }
 function uid() { return Math.random().toString(36).slice(2); }
 
+// DB에 조용히 반영 — 실패해도 화면 표시된 상태는 그대로 유지하고 콘솔에만 남김
+async function persistCreate(item: PipelineItem) {
+  try {
+    await fetch("/api/pipeline", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: item.id, news: item.news, status: item.status, startedAt: item.startedAt }),
+    });
+  } catch (e) {
+    console.error("파이프라인 저장 실패:", e);
+  }
+}
+
+async function persistUpdate(id: string, patch: Partial<PipelineItem>) {
+  try {
+    await fetch(`/api/pipeline/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch),
+    });
+  } catch (e) {
+    console.error("파이프라인 갱신 실패:", e);
+  }
+}
+
 interface StoreValue {
   news: AnimeNews[];
   page: number;
   setPage: React.Dispatch<React.SetStateAction<number>>;
   agentStatus: AgentStatusType;
   pipeline: PipelineItem[];
+  pipelineLoaded: boolean;
   logs: LogEntry[];
   clearLogs: () => void;
   readerId: string | null;
@@ -60,11 +86,27 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [page, setPage]               = useState(1);
   const [agentStatus, setAgentStatus] = useState<AgentStatusType>("idle");
   const [pipeline, setPipeline]       = useState<PipelineItem[]>([]);
+  const [pipelineLoaded, setPipelineLoaded] = useState(false);
   const [logs, setLogs]               = useState<LogEntry[]>([]);
   const [readerId, setReaderId]       = useState<string | null>(null);
 
   const addLog = useCallback((agent: LogEntry["agent"], msg: string, level: LogEntry["level"] = "info") => {
     setLogs(l => [...l, { id: uid(), agent, msg, level, time: now() }]);
+  }, []);
+
+  // 저장된 처리 결과 불러오기 (새로고침해도 유지)
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/pipeline");
+        const json = await res.json();
+        if (Array.isArray(json.data)) setPipeline(json.data);
+      } catch (e) {
+        console.error("파이프라인 불러오기 실패:", e);
+      } finally {
+        setPipelineLoaded(true);
+      }
+    })();
   }, []);
 
   const clearLogs = useCallback(() => setLogs([]), []);
@@ -94,8 +136,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (!existingId) {
       const newItem: PipelineItem = { id, news: newsItem, status: "writing", startedAt: now() };
       setPipeline(p => [newItem, ...p]);
+      persistCreate(newItem);
     } else {
       setPipeline(p => p.map(i => i.id === id ? { ...i, status: "writing", editedDraft } : i));
+      persistUpdate(id, { status: "writing", editedDraft });
     }
 
     setAgentStatus("writing");
@@ -119,15 +163,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         if (json.error) throw new Error(json.error);
         draft = json.draft;
         setPipeline(p => p.map(i => i.id === id ? { ...i, draft, status: "confirming" } : i));
+        persistUpdate(id, { draft, status: "confirming" });
         addLog("writer", `초안 완성 (${draft.length}자)`, "success");
       } catch (e: any) {
         addLog("writer", `작성 실패: ${e.message}`, "error");
         setPipeline(p => p.map(i => i.id === id ? { ...i, status: "rejected" } : i));
+        persistUpdate(id, { status: "rejected" });
         setAgentStatus("idle");
         return;
       }
     } else {
       setPipeline(p => p.map(i => i.id === id ? { ...i, editedDraft, status: "confirming" } : i));
+      persistUpdate(id, { editedDraft, status: "confirming" });
       addLog("writer", "수정본 전달 완료", "success");
     }
 
@@ -147,19 +194,30 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       });
       const json = await res.json();
       if (json.error) throw new Error(json.error);
+      const finishedAt = now();
+      const finalStatus: ArticleStatus = json.approved ? "approved" : "rejected";
       setPipeline(p => p.map(i => i.id === id ? {
         ...i,
         approved:    json.approved,
         score:       json.score,
         summary:     json.summary,
         confirmRaw:  json.raw,
-        status:      json.approved ? "approved" : "rejected",
-        finishedAt:  now(),
+        status:      finalStatus,
+        finishedAt,
       } : i));
+      persistUpdate(id, {
+        approved:   json.approved,
+        score:      json.score,
+        summary:    json.summary,
+        confirmRaw: json.raw,
+        status:     finalStatus,
+        finishedAt,
+      });
       addLog("confirm", `검토 완료: ${json.approved ? "✅ 승인" : "❌ 반려"} (${json.score}점)`, json.approved ? "success" : "warn");
     } catch (e: any) {
       addLog("confirm", `검토 실패: ${e.message}`, "error");
       setPipeline(p => p.map(i => i.id === id ? { ...i, status: "rejected" } : i));
+      persistUpdate(id, { status: "rejected" });
     } finally {
       setAgentStatus("idle");
     }
@@ -172,7 +230,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   return (
     <StoreContext.Provider value={{
-      news, page, setPage, agentStatus, pipeline, logs, clearLogs,
+      news, page, setPage, agentStatus, pipeline, pipelineLoaded, logs, clearLogs,
       readerId, setReaderId, runFetcher, runPipeline, handleRewrite,
     }}>
       {children}
