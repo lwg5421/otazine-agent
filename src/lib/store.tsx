@@ -94,20 +94,29 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setLogs(l => [...l, { id: uid(), agent, msg, level, time: now() }]);
   }, []);
 
-  // 저장된 처리 결과 불러오기 (새로고침해도 유지)
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch("/api/pipeline");
-        const json = await res.json();
-        if (Array.isArray(json.data)) setPipeline(json.data);
-      } catch (e) {
-        console.error("파이프라인 불러오기 실패:", e);
-      } finally {
-        setPipelineLoaded(true);
-      }
-    })();
+  // 저장된 처리 결과 불러오기 (새로고침해도 유지, 다른 사람이 만든 것도 같이 보임)
+  const refetchPipeline = useCallback(async () => {
+    try {
+      const res = await fetch("/api/pipeline");
+      const json = await res.json();
+      if (Array.isArray(json.data)) setPipeline(json.data);
+    } catch (e) {
+      console.error("파이프라인 불러오기 실패:", e);
+    }
   }, []);
+
+  useEffect(() => {
+    refetchPipeline().finally(() => setPipelineLoaded(true));
+  }, [refetchPipeline]);
+
+  // 같은 링크로 접속한 다른 사람이 처리한 기사도 자동으로 반영되도록 주기적으로 동기화.
+  // 단, 지금 이 브라우저에서 직접 파이프라인을 돌리고 있을 때는 낙관적 업데이트를
+  // 서버의 약간 지연된 값으로 덮어쓰지 않도록 건너뛴다.
+  useEffect(() => {
+    if (agentStatus !== "idle") return;
+    const interval = setInterval(refetchPipeline, 5000);
+    return () => clearInterval(interval);
+  }, [agentStatus, refetchPipeline]);
 
   const clearLogs = useCallback(() => setLogs([]), []);
 
