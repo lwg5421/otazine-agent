@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { prisma, ensureSchema } from "@/lib/db";
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
+    await ensureSchema();
     const body = await req.json();
     const row = await prisma.pipelineItem.update({
       where: { id: params.id },
@@ -25,6 +26,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
+    await ensureSchema();
     await prisma.pipelineItem.delete({ where: { id: params.id } });
     return NextResponse.json({ ok: true });
   } catch (e: any) {
