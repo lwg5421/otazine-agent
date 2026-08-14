@@ -168,6 +168,9 @@ export function PipelineCard({ item }: { item: PipelineItem }) {
             <img src={proxiedImage(item.news.image)} alt="" style={{ width: "100%", maxHeight: 200,
               objectFit: "cover", borderRadius: 4, marginTop: 12, opacity: 0.9 }} />
           )}
+          <div style={{ fontSize: 9, color: "#4ecca3", letterSpacing: "0.06em", marginTop: 10 }}>
+            {new Date(item.news.date).toLocaleDateString("ko-KR")} · {item.news.categories.join(", ") || "General"}
+          </div>
 
           {/* 작성된 기사 */}
           {(item.draft || item.editedDraft) && (
@@ -309,8 +312,11 @@ function ReaderModalContent({ item, onClose }: { item: PipelineItem; onClose: ()
         <div style={{ maxWidth: 680, margin: "0 auto" }}>
           {item.news.image && (
             <img src={proxiedImage(item.news.image)} alt="" style={{ width: "100%", maxHeight: 340,
-              objectFit: "cover", borderRadius: 8, marginBottom: 24 }} />
+              objectFit: "cover", borderRadius: 8, marginBottom: 16 }} />
           )}
+          <div style={{ fontSize: 12, color: "#4ecca3", letterSpacing: "0.06em", marginBottom: 16 }}>
+            {new Date(item.news.date).toLocaleDateString("ko-KR")} · {item.news.categories.join(", ") || "General"}
+          </div>
           <div style={{ fontSize: 17, lineHeight: 2, color: "#eee", whiteSpace: "pre-wrap",
             wordBreak: "break-word" }}>
             {text}
