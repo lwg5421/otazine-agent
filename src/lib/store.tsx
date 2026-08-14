@@ -35,7 +35,10 @@ export const AGENTS = {
   system:  { name: "시스템",        color: "#888"    },
 } as const;
 
-function now() { return new Date().toLocaleTimeString("ko-KR", { hour12: false }); }
+function now() {
+  const d = new Date();
+  return `${d.toLocaleDateString("ko-KR")} ${d.toLocaleTimeString("ko-KR", { hour12: false })}`;
+}
 function uid() { return Math.random().toString(36).slice(2); }
 
 // DB에 조용히 반영 — 실패해도 화면 표시된 상태는 그대로 유지하고 콘솔에만 남김
