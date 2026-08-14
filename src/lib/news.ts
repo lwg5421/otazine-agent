@@ -17,6 +17,13 @@ function stripHtml(text: string): string {
   return text.replace(/<[^>]*>/g, "").trim();
 }
 
+// ANN이 다른 도메인에서 오는 이미지 요청을 막는 경우(핫링크 차단, 광고 차단
+// 확장 프로그램 등)가 있어 우리 서버를 거쳐 가도록 감싼다.
+export function proxiedImage(url: string | null | undefined): string | undefined {
+  if (!url) return undefined;
+  return `/api/image-proxy?url=${encodeURIComponent(url)}`;
+}
+
 async function fetchOgImage(url: string): Promise<string | null> {
   try {
     const res = await fetch(url, {

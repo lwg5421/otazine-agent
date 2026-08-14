@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { AnimeNews } from "@/lib/news";
+import { type AnimeNews, proxiedImage } from "@/lib/news";
 import { AGENTS, useStore, type ArticleStatus, type AgentStatusType, type PipelineItem } from "@/lib/store";
 import { copyText } from "@/lib/clipboard";
 
@@ -52,7 +52,7 @@ export function NewsCard({ item, onStart, disabled }: {
     onMouseEnter={e => (e.currentTarget.style.borderColor = "#2a2a50")}
     onMouseLeave={e => (e.currentTarget.style.borderColor = "#1a1a30")}>
       {item.image && (
-        <img className="card-image" src={item.image} alt="" referrerPolicy="no-referrer"
+        <img className="card-image" src={proxiedImage(item.image)} alt=""
           style={{ width: "100%", height: 100, objectFit: "cover", opacity: 0.75 }} />
       )}
       <div className="card-body" style={{ padding: "10px 12px", flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
@@ -142,7 +142,7 @@ export function PipelineCard({ item }: { item: PipelineItem }) {
             borderRadius: "50%", animation: "spin 0.8s linear infinite", flexShrink: 0 }} />
         )}
         {item.news.image && (
-          <img src={item.news.image} alt="" referrerPolicy="no-referrer" style={{ width: 32, height: 32, borderRadius: 4,
+          <img src={proxiedImage(item.news.image)} alt="" style={{ width: 32, height: 32, borderRadius: 4,
             objectFit: "cover", flexShrink: 0, opacity: 0.85 }} />
         )}
         <StatusBadge status={item.status} score={item.score} />
@@ -165,7 +165,7 @@ export function PipelineCard({ item }: { item: PipelineItem }) {
         <div style={{ padding: "0 14px 14px", borderTop: "1px solid #1a1a30" }}>
 
           {item.news.image && (
-            <img src={item.news.image} alt="" referrerPolicy="no-referrer" style={{ width: "100%", maxHeight: 200,
+            <img src={proxiedImage(item.news.image)} alt="" style={{ width: "100%", maxHeight: 200,
               objectFit: "cover", borderRadius: 4, marginTop: 12, opacity: 0.9 }} />
           )}
 
@@ -308,7 +308,7 @@ function ReaderModalContent({ item, onClose }: { item: PipelineItem; onClose: ()
       <div style={{ flex: 1, overflowY: "auto", padding: "24px 20px" }}>
         <div style={{ maxWidth: 680, margin: "0 auto" }}>
           {item.news.image && (
-            <img src={item.news.image} alt="" referrerPolicy="no-referrer" style={{ width: "100%", maxHeight: 340,
+            <img src={proxiedImage(item.news.image)} alt="" style={{ width: "100%", maxHeight: 340,
               objectFit: "cover", borderRadius: 8, marginBottom: 24 }} />
           )}
           <div style={{ fontSize: 17, lineHeight: 2, color: "#eee", whiteSpace: "pre-wrap",
