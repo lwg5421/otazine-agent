@@ -108,7 +108,7 @@ export function StatusBadge({ status, score }: { status: ArticleStatus; score?: 
 // ── 파이프라인 카드 ────────────────────────────────────
 export function PipelineCard({ item }: { item: PipelineItem }) {
   const { handleRewrite, setReaderId } = useStore();
-  const [open, setOpen]     = useState(item.status === "approved" || item.status === "rejected");
+  const [open, setOpen]     = useState(false);
   const [editing, setEditing] = useState(false);
   const [editText, setEditText] = useState(item.draft ?? "");
   const [copied, setCopied] = useState(false);
@@ -122,9 +122,8 @@ export function PipelineCard({ item }: { item: PipelineItem }) {
   };
 
   useEffect(() => {
-    if (item.status === "approved" || item.status === "rejected") setOpen(true);
     setEditText(item.editedDraft ?? item.draft ?? "");
-  }, [item.status, item.draft, item.editedDraft]);
+  }, [item.draft, item.editedDraft]);
 
   const isRunning = item.status === "writing" || item.status === "confirming";
 
